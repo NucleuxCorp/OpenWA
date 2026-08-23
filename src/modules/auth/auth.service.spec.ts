@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UnauthorizedException, NotFoundException } from '@nestjs/common';
+import { UnauthorizedException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { createHash, createHmac } from 'crypto';
 import { AuthService, resolveSeedApiKey, bannerKeyLine } from './auth.service';
 import { ApiKey, ApiKeyRole } from './entities/api-key.entity';
@@ -314,6 +314,16 @@ describe('AuthService', () => {
       const result = await service.revoke('uuid-1');
 
       expect(result.isActive).toBe(false); // revoke still succeeded
+    });
+
+    it('refuses to revoke the last active ADMIN key', async () => {
+      const key = createMockApiKey({ role: ApiKeyRole.ADMIN, isActive: true });
+      (repository.findOne as jest.Mock).mockResolvedValue(key);
+      (repository.count as jest.Mock).mockResolvedValue(1);
+
+      await expect(service.revoke('uuid-1')).rejects.toThrow(BadRequestException);
+      expect(repository.save).not.toHaveBeenCalled();
+      expect(key.isActive).toBe(true);
     });
   });
 

@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, UnauthorizedException, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+  BadRequestException,
+  OnModuleInit,
+} from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -221,6 +227,21 @@ export class AuthService implements OnModuleInit {
 
   async revoke(id: string): Promise<ApiKey> {
     const apiKey = await this.findOne(id);
+
+    if (apiKey.role === ApiKeyRole.ADMIN && apiKey.isActive) {
+      const activeAdmins = await this.apiKeyRepository.count({
+        where: { role: ApiKeyRole.ADMIN, isActive: true },
+      });
+      if (activeAdmins <= 1) {
+        throw new BadRequestException(
+          'Cannot revoke the last active ADMIN key: the first-boot reseed only fires when NO keys ' +
+            'exist, so the row left behind by a revoke makes this permanent. Create and verify a ' +
+            'replacement ADMIN key first, or use DELETE /api/auth/api-keys/:id — that removes the row ' +
+            'and a restart will reseed.',
+        );
+      }
+    }
+
     // A revoked key fails validation before its next flush, so its accumulator would orphan —
     // drop it here.
     this.pendingUsage.delete(id);
