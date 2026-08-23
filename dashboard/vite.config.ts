@@ -11,6 +11,11 @@ const { version: pkgVersion } = JSON.parse(readFileSync(resolve(process.cwd(), '
   version: string;
 };
 
+// Host to bind the dev server to. Defaults to 127.0.0.1 (fail-closed) so an unset
+// variable never re-exposes the LAN/VPN surface; set MASIVO_DASH_HOST to the DHCP
+// lease address to reach the dashboard from another machine.
+const devHost = process.env.MASIVO_DASH_HOST || '127.0.0.1';
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
@@ -21,6 +26,36 @@ export default defineConfig({
   },
   server: {
     port: 2886,
+    // Bound to a single interface, driven by MASIVO_DASH_HOST (default 127.0.0.1).
+    // '0.0.0.0' also bound a VPN tunnel, the host-only virtual networks and the
+    // lab switch. Because the proxy below forwards /api and
+    // /socket.io to the OpenWA backend, anything reaching this port reaches the
+    // WhatsApp gateway API -- so the surface is narrowed to the one interface that
+    // actually needs it.
+    //
+    // NOTE: the LAN address comes from DHCP. If the lease changes, set
+    // MASIVO_DASH_HOST to the new address rather than editing this file.
+    host: devHost,
+    // An explicit list instead of `true`: allowedHosts: true disables Vite's
+    // Host-header allowlist, which is the defence against DNS rebinding.
+    //
+    // 'openwa.local' is the project's custom domain, mapped to 127.0.0.1 in the
+    // Windows hosts file and used throughout docs/openwa-instalacion.md. Binding
+    // to 127.0.0.1 does NOT cover it: the bind decides which interface accepts the
+    // connection, while allowedHosts checks the Host header the browser sends -- so
+    // http://OpenWA.local:2886 needs the name listed here or Vite answers 403.
+    //
+    // It MUST be spelled in lowercase. The hosts file, the docs and the browser's
+    // address bar all say 'OpenWA.local', but Vite lowercases the incoming Host
+    // header and then compares it case-sensitively against this list -- so the
+    // mixed-case spelling silently fails to match and Vite answers 403 with
+    // 'This host ("openwa.local") is not allowed'. Verified at runtime on Vite 8.1.4;
+    // an entry that merely looks right is not the same as one that matches.
+    //
+    // This is a Host-header allowlist, not a CORS list. The dashboard calls the API
+    // as '/api' through the proxy below, i.e. same-origin, so it never issues a
+    // cross-origin request and needs no CORS_ORIGINS entry.
+    allowedHosts: ['localhost', '127.0.0.1', 'openwa.local', devHost],
     proxy: {
       '/api': {
         target: 'http://localhost:2785',
