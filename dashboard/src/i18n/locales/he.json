@@ -95,6 +95,8 @@
     "searchPlaceholder": "חיפוש שיחות...",
     "loadingChats": "טוען שיחות...",
     "empty": "אין שיחות",
+    "hideGroups": "הסתר קבוצות",
+    "allHiddenByGroupFilter": "אין צ'אטים להצגה. המסנן מסתיר {{hidden}} צ'אטים קבוצתיים.",
     "noMessageYet": "אין הודעות עדיין",
     "loadingMessages": "טוען הודעות...",
     "noMessagesInChat": "אין הודעות עדיין. שלח את ההודעה הראשונה כדי להתחיל!",

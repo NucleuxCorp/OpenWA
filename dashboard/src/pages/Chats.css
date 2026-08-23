@@ -89,6 +89,47 @@
   outline: none;
 }
 
+/* Group filter toggle. Sits next to the search box and is styled from the same tokens, because
+   it is the same kind of control: something that narrows the list below it. The `.active` state
+   has to be unmistakable -- while it is on, the list is hiding conversations, and an operator who
+   cannot see that the filter is engaged reads the shorter list as "nobody wrote". */
+.chats-page .chat-group-filter{
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-light);
+  border: 1px solid var(--border);
+  border-radius: var(--radius, 8px);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chats-page .chat-group-filter svg{
+  flex-shrink: 0;
+}
+
+.chats-page .chat-group-filter:hover{
+  border-color: var(--primary);
+  color: var(--text-primary);
+}
+
+.chats-page .chat-group-filter.active{
+  background: rgba(34, 197, 94, 0.1);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.chats-page .chat-group-filter:focus-visible{
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
 .chats-page .chats-list{
   flex: 1;
   overflow-y: auto;

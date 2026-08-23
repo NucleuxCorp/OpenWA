@@ -95,6 +95,8 @@
     "searchPlaceholder": "채팅 검색...",
     "loadingChats": "채팅 불러오는 중...",
     "empty": "채팅 없음",
+    "hideGroups": "그룹 숨기기",
+    "allHiddenByGroupFilter": "표시할 채팅이 없습니다. 필터가 그룹 채팅 {{hidden}}개를 숨기고 있습니다.",
     "noMessageYet": "아직 메시지 없음",
     "loadingMessages": "메시지 불러오는 중...",
     "noMessagesInChat": "아직 메시지가 없습니다. 첫 메시지를 보내 대화를 시작하세요!",

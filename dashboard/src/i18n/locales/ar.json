@@ -95,6 +95,8 @@
     "searchPlaceholder": "البحث في المحادثات...",
     "loadingChats": "جارٍ تحميل المحادثات...",
     "empty": "لا توجد محادثات",
+    "hideGroups": "إخفاء المجموعات",
+    "allHiddenByGroupFilter": "لا توجد محادثات لعرضها. عامل التصفية يخفي {{hidden}} محادثة جماعية.",
     "noMessageYet": "لا توجد رسائل بعد",
     "loadingMessages": "جارٍ تحميل الرسائل...",
     "noMessagesInChat": "لا توجد رسائل بعد. أرسل الرسالة الأولى للبدء!",

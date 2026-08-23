@@ -95,6 +95,8 @@
     "searchPlaceholder": "Pesquisar chats...",
     "loadingChats": "Carregando chats...",
     "empty": "Sem chats",
+    "hideGroups": "Ocultar grupos",
+    "allHiddenByGroupFilter": "Nenhuma conversa para exibir. O filtro esta ocultando {{hidden}} grupos.",
     "noMessageYet": "Ainda sem mensagens",
     "loadingMessages": "Carregando mensagens...",
     "noMessagesInChat": "Ainda não há mensagens. Envie a primeira para começar!",

@@ -16,6 +16,7 @@ import {
   X,
   CornerUpLeft,
   Trash2,
+  UsersRound,
 } from 'lucide-react';
 import {
   sessionApi,
@@ -27,9 +28,11 @@ import {
   type SearchHit,
 } from '../services/api';
 import { mergeDeliveryStatus, type ChatMessageView } from '../utils/chatMessages';
+import { filterChats, excludeGroups } from '../utils/chatFilters';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useRole } from '../hooks/useRole';
+import { useHideGroups } from '../hooks/useHideGroups';
 import { useToast } from '../components/Toast';
 import { PageHeader } from '../components/PageHeader';
 import { GlobalSearch } from '../components/GlobalSearch';
@@ -97,6 +100,7 @@ export function Chats() {
   const [chats, setChats] = useState<Chat[]>([]);
   const [loadingChats, setLoadingChats] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const { hideGroups, setHideGroups } = useHideGroups();
 
   // Selected chat & message history
   const [activeChat, setActiveChat] = useState<Chat | null>(null);
@@ -704,11 +708,13 @@ export function Chats() {
     [t],
   );
 
-  const filteredChats = chats.filter(
-    c =>
-      c.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.id.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  // Two predicates instead of one inline expression: see utils/chatFilters. `hiddenByGroupFilter`
+  // is what separates "nothing matched" from "the group filter swept the list", which the empty
+  // state below has to say out loud -- a list that is empty because of a toggle the operator
+  // forgot about looks exactly like a broken chat list.
+  const searched = filterChats(chats, searchQuery);
+  const filteredChats = excludeGroups(searched, hideGroups);
+  const hiddenByGroupFilter = searched.length - filteredChats.length;
 
   // Image media items for the lightbox, in render order. `getMediaSrc` reconstructs a usable src
   // from either a base64 payload or a URL — the ChatMessageView shape stores both in `data`.
@@ -797,6 +803,19 @@ export function Chats() {
                   onChange={e => setSearchQuery(e.target.value)}
                 />
               </div>
+
+              {/* Group filter. aria-pressed (not a checkbox role) because this is a toggle
+                  button: it changes what the list shows, it does not submit a value. */}
+              <button
+                type="button"
+                className={`chat-group-filter ${hideGroups ? 'active' : ''}`}
+                aria-pressed={hideGroups}
+                title={t('chats.hideGroups')}
+                onClick={() => setHideGroups(!hideGroups)}
+              >
+                <UsersRound size={16} />
+                <span>{t('chats.hideGroups')}</span>
+              </button>
             </div>
 
             {/* Chat list */}
@@ -808,7 +827,13 @@ export function Chats() {
                 </div>
               ) : filteredChats.length === 0 ? (
                 <div className="chats-list-empty">
-                  <span>{t('chats.empty')}</span>
+                  {/* An empty list caused by the toggle must say so. Otherwise it is
+                      indistinguishable from a chat list that failed to load. */}
+                  <span>
+                    {hiddenByGroupFilter > 0
+                      ? t('chats.allHiddenByGroupFilter', { hidden: hiddenByGroupFilter })
+                      : t('chats.empty')}
+                  </span>
                 </div>
               ) : (
                 filteredChats.map(chat => {

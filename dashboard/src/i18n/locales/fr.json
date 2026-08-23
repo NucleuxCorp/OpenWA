@@ -95,6 +95,8 @@
     "searchPlaceholder": "Rechercher des discussions...",
     "loadingChats": "Chargement des discussions...",
     "empty": "Aucune discussion",
+    "hideGroups": "Masquer les groupes",
+    "allHiddenByGroupFilter": "Aucune conversation a afficher. Le filtre masque {{hidden}} groupes.",
     "noMessageYet": "Aucun message pour le moment",
     "loadingMessages": "Chargement des messages...",
     "noMessagesInChat": "Aucun message pour le moment. Envoyez le premier message pour commencer !",
