@@ -83,6 +83,8 @@
     "searchPlaceholder": "Rechercher des discussions...",
     "loadingChats": "Chargement des discussions...",
     "empty": "Aucune discussion",
+    "hideGroups": "Masquer les groupes",
+    "allHiddenByGroupFilter": "Aucune conversation a afficher. Le filtre masque {{hidden}} groupes.",
     "noMessageYet": "Aucun message pour le moment",
     "unreadBadge": "{{count}} message non lu",
     "unreadBadge_other": "{{count}} messages non lus",

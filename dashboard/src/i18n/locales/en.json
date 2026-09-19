@@ -83,6 +83,8 @@
     "searchPlaceholder": "Search chats...",
     "loadingChats": "Loading chats...",
     "empty": "No chats",
+    "hideGroups": "Hide groups",
+    "allHiddenByGroupFilter": "No chats to show. The filter is hiding {{hidden}} group chats.",
     "noMessageYet": "No messages yet",
     "unreadBadge": "{{count}} unread message",
     "unreadBadge_other": "{{count}} unread messages",

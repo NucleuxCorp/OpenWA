@@ -83,6 +83,8 @@
     "searchPlaceholder": "搜索聊天...",
     "loadingChats": "正在加载聊天...",
     "empty": "没有聊天",
+    "hideGroups": "隐藏群组",
+    "allHiddenByGroupFilter": "没有可显示的聊天。筛选器已隐藏 {{hidden}} 个群聊。",
     "noMessageYet": "暂无消息",
     "unreadBadge": "{{count}} 条未读消息",
     "unreadBadge_other": "{{count}} 条未读消息",

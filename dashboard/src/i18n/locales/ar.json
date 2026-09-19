@@ -83,6 +83,8 @@
     "searchPlaceholder": "البحث في المحادثات...",
     "loadingChats": "جارٍ تحميل المحادثات...",
     "empty": "لا توجد محادثات",
+    "hideGroups": "إخفاء المجموعات",
+    "allHiddenByGroupFilter": "لا توجد محادثات لعرضها. عامل التصفية يخفي {{hidden}} محادثة جماعية.",
     "noMessageYet": "لا توجد رسائل بعد",
     "unreadBadge": "{{count}} رسالة غير مقروءة",
     "unreadBadge_other": "{{count}} رسالة غير مقروءة",

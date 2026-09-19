@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, CircleDashed, Loader2, Megaphone, Plus, Search } from 'lucide-react';
+import { AlertCircle, CircleDashed, Loader2, Megaphone, Plus, Search, UsersRound } from 'lucide-react';
 import type { UseQueryResult } from '@tanstack/react-query';
 import type { Channel, Chat, ContactStatusGroup, Session } from '../../services/api';
 import ChatAvatar from './ChatAvatar';
@@ -19,6 +19,9 @@ interface ChatSidebarProps {
   chatsTab: {
     loading: boolean;
     chats: Chat[];
+    hideGroups: boolean;
+    hiddenByGroupFilter: number;
+    onToggleHideGroups: () => void;
     activeChatId?: string;
     pictures?: Record<string, string | null>;
     onSelectChat: (chat: Chat) => void;
@@ -163,6 +166,21 @@ function ChatSidebar({
           />
         </div>
 
+        {/* Group filter. aria-pressed (not a checkbox role) because this is a toggle button: it
+            changes what the list shows, it does not submit a value. */}
+        {activeTab === 'chats' && (
+          <button
+            type="button"
+            className={`chat-group-filter ${chatsTab.hideGroups ? 'active' : ''}`}
+            aria-pressed={chatsTab.hideGroups}
+            title={t('chats.hideGroups')}
+            onClick={chatsTab.onToggleHideGroups}
+          >
+            <UsersRound size={16} />
+            <span>{t('chats.hideGroups')}</span>
+          </button>
+        )}
+
         {/* Compose a new status — only meaningful on the Status tab. */}
         {activeTab === 'status' && (
           <button type="button" className="btn-primary status-compose-trigger" onClick={onComposeStatus}>
@@ -182,7 +200,13 @@ function ChatSidebar({
             </div>
           ) : chatsTab.chats.length === 0 ? (
             <div className="chats-list-empty">
-              <span>{t('chats.empty')}</span>
+              {/* An empty list caused by the toggle must say so; otherwise it is indistinguishable
+                  from a chat list that failed to load. */}
+              <span>
+                {chatsTab.hiddenByGroupFilter > 0
+                  ? t('chats.allHiddenByGroupFilter', { hidden: chatsTab.hiddenByGroupFilter })
+                  : t('chats.empty')}
+              </span>
             </div>
           ) : (
             chatsTab.chats.map(renderChatRow)

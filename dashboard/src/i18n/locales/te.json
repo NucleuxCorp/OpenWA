@@ -83,6 +83,8 @@
     "searchPlaceholder": "చాట్‌ల కోసం వెతకండి...",
     "loadingChats": "చాట్‌లను లోడ్ చేస్తోంది...",
     "empty": "చాట్‌లు లేవు",
+    "hideGroups": "గ్రూప్‌లను దాచు",
+    "allHiddenByGroupFilter": "చూపడానికి చాట్‌లు లేవు. ఫిల్టర్ {{hidden}} గ్రూప్ చాట్‌లను దాచిపెట్టింది.",
     "noMessageYet": "ఇంకా సందేశాలు లేవు",
     "unreadBadge": "{{count}} చదవని సందేశం",
     "unreadBadge_other": "{{count}} చదవని సందేశాలు",

@@ -17,6 +17,7 @@ interface ChatLike {
   id: string;
   name?: string;
   kind?: string;
+  isGroup?: boolean;
 }
 
 /**
@@ -25,6 +26,17 @@ interface ChatLike {
  */
 export function filterChats<T extends ChatLike>(chats: T[], query: string): T[] {
   return chats.filter(c => c.kind !== 'channel' && c.kind !== 'status' && matches(query, c.name, c.id));
+}
+
+/**
+ * Hide group conversations when the operator asks for it.
+ *
+ * Kept separate from filterChats: upstream owns filterChats and keeps changing it; this predicate
+ * is ours. A chat whose `isGroup` is absent counts as NOT a group and stays visible -- hiding a
+ * private conversation loses a message someone was waiting for, showing a group does not.
+ */
+export function excludeGroups<T extends ChatLike>(chats: T[], exclude: boolean): T[] {
+  return exclude ? chats.filter(c => c.isGroup !== true) : chats;
 }
 
 /** Channels tab: same search box, matched on the channel's own name/id. */

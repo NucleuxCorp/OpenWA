@@ -83,6 +83,8 @@
     "searchPlaceholder": "Chats durchsuchen...",
     "loadingChats": "Chats werden geladen...",
     "empty": "Keine Chats",
+    "hideGroups": "Gruppen ausblenden",
+    "allHiddenByGroupFilter": "Keine Chats zum Anzeigen. Der Filter blendet {{hidden}} Gruppenchats aus.",
     "noMessageYet": "Noch keine Nachrichten",
     "unreadBadge": "{{count}} ungelesene Nachricht",
     "unreadBadge_other": "{{count}} ungelesene Nachrichten",

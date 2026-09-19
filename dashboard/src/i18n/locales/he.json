@@ -83,6 +83,8 @@
     "searchPlaceholder": "חיפוש שיחות...",
     "loadingChats": "טוען שיחות...",
     "empty": "אין שיחות",
+    "hideGroups": "הסתר קבוצות",
+    "allHiddenByGroupFilter": "אין צ'אטים להצגה. המסנן מסתיר {{hidden}} צ'אטים קבוצתיים.",
     "noMessageYet": "אין הודעות עדיין",
     "unreadBadge": "{{count}} הודעה שלא נקראה",
     "unreadBadge_other": "{{count}} הודעות שלא נקראו",

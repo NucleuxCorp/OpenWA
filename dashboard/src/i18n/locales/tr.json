@@ -83,6 +83,8 @@
     "searchPlaceholder": "Sohbetlerde ara...",
     "loadingChats": "Sohbetler yükleniyor...",
     "empty": "Sohbet yok",
+    "hideGroups": "Grupları gizle",
+    "allHiddenByGroupFilter": "Gösterilecek sohbet yok. Filtre {{hidden}} grup sohbetini gizliyor.",
     "noMessageYet": "Henüz mesaj yok",
     "unreadBadge": "{{count}} okunmamış mesaj",
     "unreadBadge_other": "{{count}} okunmamış mesaj",

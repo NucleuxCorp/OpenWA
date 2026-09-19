@@ -83,6 +83,8 @@
     "searchPlaceholder": "채팅 검색...",
     "loadingChats": "채팅 불러오는 중...",
     "empty": "채팅 없음",
+    "hideGroups": "그룹 숨기기",
+    "allHiddenByGroupFilter": "표시할 채팅이 없습니다. 필터가 그룹 채팅 {{hidden}}개를 숨기고 있습니다.",
     "noMessageYet": "아직 메시지 없음",
     "unreadBadge": "읽지 않은 메시지 {{count}}개",
     "unreadBadge_other": "읽지 않은 메시지 {{count}}개",

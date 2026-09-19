@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { filterChats, filterChannels, groupStatusesByContact } from './chatFilters.ts';
+import { filterChats, filterChannels, groupStatusesByContact, excludeGroups } from './chatFilters.ts';
 
 const chat = (id: string, name?: string, kind?: string) => ({ id, name, kind });
 
@@ -101,5 +101,44 @@ test('status search matches name, pushName or id', () => {
   assert.deepEqual(
     groupStatusesByContact(statuses, '628111').map(g => g.contact.id),
     ['628111@c.us'],
+  );
+});
+
+const gchat = (id: string, name?: string, isGroup?: boolean) => ({ id, name, isGroup });
+const roster = [
+  gchat('573001112222@c.us', 'Ana', false),
+  gchat('120363001@g.us', 'Barrio Norte', true),
+  gchat('573004445555@c.us', 'Beto'),
+  gchat('120363002@g.us', 'Comite', true),
+];
+
+test('excludeGroups off is a no-op, and returns every chat', () => {
+  assert.equal(excludeGroups(roster, false).length, 4);
+});
+
+test('excludeGroups on drops exactly the groups', () => {
+  assert.deepEqual(
+    excludeGroups(roster, true).map(c => c.name),
+    ['Ana', 'Beto'],
+  );
+});
+
+test('a chat with isGroup absent survives the filter', () => {
+  assert.deepEqual(
+    excludeGroups([gchat('x@c.us', 'Sin dato')], true).map(c => c.name),
+    ['Sin dato'],
+  );
+});
+
+test('excludeGroups and filterChats compose in either order', () => {
+  const a = excludeGroups(filterChats(roster, 'b'), true);
+  const b = filterChats(excludeGroups(roster, true), 'b');
+  assert.deepEqual(
+    a.map(c => c.id),
+    b.map(c => c.id),
+  );
+  assert.deepEqual(
+    a.map(c => c.name),
+    ['Beto'],
   );
 });

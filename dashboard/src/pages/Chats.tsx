@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Trans, useTranslation } from 'react-i18next';
 import { nextReconnectState } from '../utils/reconnectState';
 import { applyIncomingToChatList } from '../utils/chatList';
-import { filterChats, filterChannels, groupStatusesByContact } from '../utils/chatFilters';
+import { filterChats, filterChannels, excludeGroups, groupStatusesByContact } from '../utils/chatFilters';
 import { ArrowLeft, Loader2, Megaphone, CircleDashed, AlertCircle, MessageSquare } from 'lucide-react';
 import { useProfilePicture } from '../hooks/useProfilePicture';
 import { useProfilePictures } from '../hooks/useProfilePictures';
@@ -31,6 +31,7 @@ import {
 } from '../utils/chatMessages';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { useHideGroups } from '../hooks/useHideGroups';
 import { useToast } from '../hooks/useToast';
 import { PageHeader } from '../components/PageHeader';
 import { GlobalSearch } from '../components/GlobalSearch';
@@ -119,6 +120,7 @@ export function Chats() {
   const [chats, setChats] = useState<Chat[]>([]);
   const [loadingChats, setLoadingChats] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const { hideGroups, setHideGroups } = useHideGroups();
 
   // Selected chat & message history
   const [activeChat, setActiveChat] = useState<Chat | null>(null);
@@ -763,7 +765,13 @@ export function Chats() {
   // One search box drives all three tabs; each matches on its own fields. Plain consts (not useMemo)
   // because chats/channelsQuery.data/statusesQuery.data are already stable, query-cached references,
   // so re-filtering on every render is cheap. See utils/chatFilters for the two status orderings.
-  const filteredChats = filterChats(chats, searchQuery);
+  // Two predicates instead of one inline expression: see utils/chatFilters. `hiddenByGroupFilter`
+  // is what separates "nothing matched" from "the group filter swept the list", which the empty
+  // state has to say out loud -- a list emptied by a toggle the operator forgot about looks exactly
+  // like a broken chat list.
+  const searchedChats = filterChats(chats, searchQuery);
+  const filteredChats = excludeGroups(searchedChats, hideGroups);
+  const hiddenByGroupFilter = searchedChats.length - filteredChats.length;
   // The channels zero-state ("not subscribed to any channels") stays keyed on the UNFILTERED list
   // below, so a non-matching search renders an empty list rather than claiming there are none.
   const filteredChannels = filterChannels(channelsQuery.data ?? [], searchQuery);
@@ -855,6 +863,9 @@ export function Chats() {
             chatsTab={{
               loading: loadingChats,
               chats: filteredChats,
+              hideGroups,
+              hiddenByGroupFilter,
+              onToggleHideGroups: () => setHideGroups(!hideGroups),
               activeChatId: activeChat?.id,
               pictures: listPics.data,
               onSelectChat: setActiveChat,
