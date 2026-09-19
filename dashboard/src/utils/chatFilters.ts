@@ -1,18 +1,11 @@
 /**
- * Predicates for the chat list, lifted out of the page component so they can be tested.
+ * Search filtering and status grouping for the three conversation tabs.
  *
- * The module name and `filterChats` signature deliberately mirror the ones upstream
- * introduced later (dashboard/src/utils/chatFilters.ts). When this fork rebases onto that
- * release the conflict lands in one small file with an obvious resolution -- take their
- * filterChats, keep our excludeGroups -- instead of inside the 1200-line page.
+ * One search box drives Chats, Channels and Status, but each tab matches on different fields, and the
+ * Status tab additionally collapses a flat list into one row per contact with a two-axis ordering.
+ * As inline consts inside the page these were three unrelated rules reading one piece of state; as
+ * functions they take the query as an argument and can be tested.
  */
-
-/** The fields these predicates read. Narrower than Chat on purpose: it is all they need. */
-interface ChatLike {
-  id: string;
-  name?: string;
-  isGroup?: boolean;
-}
 
 /** Case-insensitive "does any of these fields contain the query". Absent fields never match. */
 const matches = (query: string, ...fields: (string | undefined)[]): boolean => {
@@ -20,23 +13,71 @@ const matches = (query: string, ...fields: (string | undefined)[]): boolean => {
   return fields.some(f => (f ?? '').toLowerCase().includes(needle));
 };
 
-/** Search box filter: matches the chat's display name or its raw JID. */
+interface ChatLike {
+  id: string;
+  name?: string;
+  kind?: string;
+  isGroup?: boolean;
+}
+
+/**
+ * Chats tab: real conversations only. Channel- and status-kind rows are hidden here and surfaced on
+ * their own tabs instead, so a channel never appears twice.
+ */
 export function filterChats<T extends ChatLike>(chats: T[], query: string): T[] {
-  return chats.filter(c => matches(query, c.name, c.id));
+  return chats.filter(c => c.kind !== 'channel' && c.kind !== 'status' && matches(query, c.name, c.id));
 }
 
 /**
  * Hide group conversations when the operator asks for it.
  *
- * Kept as its own function rather than another argument to filterChats: upstream owns
- * filterChats and will keep changing it, this predicate is ours, and separating them is what
- * keeps a future rebase mechanical.
- *
- * A chat whose `isGroup` is absent counts as NOT a group, so it stays visible. The flag comes
- * from the engine, and of the two possible mistakes -- showing a group that should be hidden,
- * or hiding a private conversation -- only the second one loses a message the operator was
- * waiting for. The visible failure is the safe one.
+ * Kept separate from filterChats: upstream owns filterChats and keeps changing it; this predicate
+ * is ours. A chat whose `isGroup` is absent counts as NOT a group and stays visible -- hiding a
+ * private conversation loses a message someone was waiting for, showing a group does not.
  */
 export function excludeGroups<T extends ChatLike>(chats: T[], exclude: boolean): T[] {
   return exclude ? chats.filter(c => c.isGroup !== true) : chats;
+}
+
+/** Channels tab: same search box, matched on the channel's own name/id. */
+export function filterChannels<T extends { id: string; name: string }>(channels: T[], query: string): T[] {
+  return channels.filter(ch => matches(query, ch.name, ch.id));
+}
+
+interface StatusItemLike<C> {
+  contact: C;
+  /** ISO-8601. Compared lexically, which orders ISO strings correctly — the store hands them over as
+   *  strings and never as epoch numbers. */
+  timestamp: string;
+}
+
+/**
+ * Status tab: collapse the flat status list to one row per contact.
+ *
+ * Two orderings, and they run in opposite directions on purpose. Groups are sorted newest-contact
+ * first, so the most recently active contact heads the list. Within a group the items are flipped to
+ * oldest-first, because the store returns statuses newest-first (postedAt DESC) and the viewer opens
+ * at the newest — reading like a WhatsApp story, newest at the bottom where the scroll lands.
+ *
+ * Getting either direction wrong is invisible in a screenshot and obvious to a user, which is why it
+ * is pinned by a test rather than left inline.
+ */
+export function groupStatusesByContact<
+  C extends { id: string; name?: string; pushName?: string },
+  T extends StatusItemLike<C>,
+>(statuses: T[], query: string): { contact: C; items: T[]; latest: string }[] {
+  const byContact = new Map<string, { contact: C; items: T[]; latest: string }>();
+  for (const item of statuses) {
+    const existing = byContact.get(item.contact.id);
+    if (existing) {
+      existing.items.push(item);
+      if (item.timestamp > existing.latest) existing.latest = item.timestamp;
+    } else {
+      byContact.set(item.contact.id, { contact: item.contact, items: [item], latest: item.timestamp });
+    }
+  }
+  for (const group of byContact.values()) group.items.reverse();
+  return Array.from(byContact.values())
+    .filter(g => matches(query, g.contact.name, g.contact.pushName, g.contact.id))
+    .sort((a, b) => (a.latest < b.latest ? 1 : a.latest > b.latest ? -1 : 0));
 }
