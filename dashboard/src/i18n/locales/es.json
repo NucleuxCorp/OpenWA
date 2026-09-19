@@ -84,7 +84,7 @@
     "loadingChats": "Cargando chats...",
     "empty": "Sin chats",
     "hideGroups": "Ocultar grupos",
-    "allHiddenByGroupFilter": "No hay chats para mostrar. El filtro esta ocultando {{hidden}} grupos.",
+    "allHiddenByGroupFilter": "No hay chats para mostrar. El filtro está ocultando {{hidden}} grupos.",
     "noMessageYet": "Aún sin mensajes",
     "unreadBadge": "{{count}} mensaje sin leer",
     "unreadBadge_other": "{{count}} mensajes sin leer",
