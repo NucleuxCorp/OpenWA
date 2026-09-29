@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `BAILEYS_USER_AGENT` sets the full linked-device identity WhatsApp shows under Settings → Linked Devices, as a `"<platform>/<browser>/<version>"` triple (e.g. `BAILEYS_USER_AGENT="Nucleux/Chrome/120.0.0"`). It takes precedence over the existing `BAILEYS_BROWSER_NAME` (which remains supported and now controls only the platform name, defaulting browser/version to `Chrome`/`120.0.0`). A malformed value (not exactly 3 non-empty segments) logs a warning and falls back rather than breaking startup. Only applies to pairings made after the change — WhatsApp remembers the device identity from when it was paired.
+
 ### Fixed
 
 - `docker compose up -d` builds from a Windows clone again. Git's default `core.autocrlf=true` gave the committed

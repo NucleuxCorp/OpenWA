@@ -17,13 +17,40 @@ import type { BaileysEvents } from './baileys-events';
 import type { BaileysHistory } from './baileys-history';
 import type { BaileysSessionStore } from './baileys-session-store';
 
+/**
+ * Resolve the linked-device identity shown in WhatsApp (Settings → Linked Devices) as
+ * [platform, browser, version]. Precedence:
+ *   1. `BAILEYS_USER_AGENT` — a full `"<platform>/<browser>/<version>"` triple (e.g.
+ *      `Nucleux/Chrome/120.0.0`), giving operators control over all three parts. Used verbatim when
+ *      it splits into exactly 3 non-empty (post-trim) segments; otherwise it is malformed, a warning
+ *      is logged, and resolution falls through to the next rule (never throws — a bad env value must
+ *      not break startup).
+ *   2. `BAILEYS_BROWSER_NAME` — legacy, platform-only override; browser/version stay 'Chrome'/'120.0.0'.
+ *   3. Default: `['OpenWA', 'Chrome', '120.0.0']`.
+ * Exported for direct unit testing (pure function, no module state).
+ */
+export function resolveBaileysBrowser(env: NodeJS.ProcessEnv): [string, string, string] {
+  const userAgent = env.BAILEYS_USER_AGENT?.trim();
+  if (userAgent) {
+    const segments = userAgent.split('/').map(segment => segment.trim());
+    if (segments.length === 3 && segments.every(segment => segment.length > 0)) {
+      return [segments[0], segments[1], segments[2]];
+    }
+    console.warn(
+      `[OpenWA] Invalid BAILEYS_USER_AGENT "${userAgent}" — expected "<platform>/<browser>/<version>" ` +
+        'with exactly 3 non-empty segments. Falling back to BAILEYS_BROWSER_NAME/default.',
+    );
+  }
+
+  const browserName = env.BAILEYS_BROWSER_NAME?.trim();
+  return [browserName || 'OpenWA', 'Chrome', '120.0.0'];
+}
+
 /** Linked-device identity shown in WhatsApp (Settings → Linked Devices). The display name is
- * operator-brandable via BAILEYS_BROWSER_NAME; it only applies to pairings made after the change. */
-const BAILEYS_BROWSER: [string, string, string] = [
-  process.env.BAILEYS_BROWSER_NAME?.trim() || 'OpenWA',
-  'Chrome',
-  '120.0.0',
-];
+ * operator-brandable via BAILEYS_USER_AGENT (full "<platform>/<browser>/<version>" triple, takes
+ * precedence) or BAILEYS_BROWSER_NAME (legacy, platform only); it only applies to pairings made
+ * after the change — WhatsApp remembers the device identity from when it was paired. */
+const BAILEYS_BROWSER: [string, string, string] = resolveBaileysBrowser(process.env);
 
 /**
  * How long logout() waits for WhatsApp to acknowledge the `remove-companion-device` IQ. Completion of
