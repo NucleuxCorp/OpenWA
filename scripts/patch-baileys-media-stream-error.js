@@ -57,7 +57,9 @@ function applyMediaStreamErrorPatch(baileysDir = DEFAULT_BAILEYS) {
     );
   }
   fs.writeFileSync(file, source.replace(PIPE_FIND, PIPE_REPLACE), 'utf8');
-  return { note: 'forwarded the media fetch stream error to the decrypt stream so a dropped download no longer crashes' };
+  return {
+    note: 'forwarded the media fetch stream error to the decrypt stream so a dropped download no longer crashes',
+  };
 }
 
 function run() {

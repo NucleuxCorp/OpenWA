@@ -88,6 +88,8 @@
     "searchPlaceholder": "Cari obrolan...",
     "loadingChats": "Memuat obrolan...",
     "empty": "Tidak ada obrolan",
+    "hideGroups": "Sembunyikan grup",
+    "allHiddenByGroupFilter": "Tidak ada obrolan untuk ditampilkan. Filter menyembunyikan {{hidden}} obrolan grup.",
     "noMessageYet": "Belum ada pesan",
     "unreadBadge": "{{count}} pesan belum dibaca",
     "unreadBadge_other": "{{count}} pesan belum dibaca",

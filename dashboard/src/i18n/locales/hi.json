@@ -88,6 +88,8 @@
     "searchPlaceholder": "चैट खोजें...",
     "loadingChats": "चैट लोड हो रहे हैं...",
     "empty": "कोई चैट नहीं",
+    "hideGroups": "समूह छिपाएँ",
+    "allHiddenByGroupFilter": "दिखाने के लिए कोई चैट नहीं है। फ़िल्टर {{hidden}} समूह चैट छिपा रहा है।",
     "noMessageYet": "अभी तक कोई संदेश नहीं",
     "unreadBadge": "{{count}} अपठित संदेश",
     "unreadBadge_other": "{{count}} अपठित संदेश",

@@ -70,15 +70,18 @@ describe('resolveBaileysBrowser', () => {
     ['4 segments', 'Nucleux/Chrome/120.0.0/extra'],
     ['an empty middle segment', 'Nucleux//120.0.0'],
     ['a whitespace-only segment', 'Nucleux/   /120.0.0'],
-  ])('logs a warning and falls through to BAILEYS_BROWSER_NAME when BAILEYS_USER_AGENT is malformed (%s)', (_label, value) => {
-    expect(resolveBaileysBrowser({ BAILEYS_USER_AGENT: value, BAILEYS_BROWSER_NAME: 'Nucleux' })).toEqual([
-      'Nucleux',
-      'Chrome',
-      '120.0.0',
-    ]);
-    expect(warnSpy).toHaveBeenCalledTimes(1);
-    expect(warnSpy.mock.calls[0][0]).toEqual(expect.stringContaining(value));
-  });
+  ])(
+    'logs a warning and falls through to BAILEYS_BROWSER_NAME when BAILEYS_USER_AGENT is malformed (%s)',
+    (_label, value) => {
+      expect(resolveBaileysBrowser({ BAILEYS_USER_AGENT: value, BAILEYS_BROWSER_NAME: 'Nucleux' })).toEqual([
+        'Nucleux',
+        'Chrome',
+        '120.0.0',
+      ]);
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining(value));
+    },
+  );
 
   it('falls through to the default when BAILEYS_USER_AGENT is malformed and BAILEYS_BROWSER_NAME is unset', () => {
     expect(resolveBaileysBrowser({ BAILEYS_USER_AGENT: 'Malformed' })).toEqual(['Ubuntu', 'Chrome', '120.0.0']);

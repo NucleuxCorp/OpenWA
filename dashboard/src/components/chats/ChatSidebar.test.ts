@@ -65,7 +65,14 @@ function renderSidebar(activeTab: ChatsTab, chats: Chat[], channels: { all: Chan
         onSearchQueryChange: () => undefined,
         onComposeStatus: () => undefined,
         formatChatTime: () => '',
-        chatsTab: { loading: false, chats, onSelectChat: () => undefined },
+        chatsTab: {
+          loading: false,
+          chats,
+          hideGroups: false,
+          hiddenByGroupFilter: 0,
+          onToggleHideGroups: () => undefined,
+          onSelectChat: () => undefined,
+        },
         channelsTab: {
           engineLoading: false,
           supported: true,
