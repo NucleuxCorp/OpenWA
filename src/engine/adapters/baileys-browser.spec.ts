@@ -87,3 +87,5 @@ describe('resolveBaileysBrowser', () => {
 
   it('never throws for a malformed BAILEYS_USER_AGENT', () => {
     expect(() => resolveBaileysBrowser({ BAILEYS_USER_AGENT: '///' })).not.toThrow();
+  });
+});

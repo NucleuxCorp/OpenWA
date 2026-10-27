@@ -77,4 +77,17 @@ function run() {
 
 if (require.main === module) run();
 
-module.exports = { applyMediaStreamErrorPatch, PIPE_FIND, PIPE_REPLACE, MARKER };
+/**
+ * The stand-down branch above as a predicate, for the startup guard (engine-patch-status.ts).
+ * Unreadable reads as applied: a tree we cannot inspect is not evidence of a broken one, and a
+ * missing messages-media.js already fails the image build, where the apply function refuses it.
+ */
+function isApplied(baileysDir = DEFAULT_BAILEYS) {
+  try {
+    return fs.readFileSync(path.join(baileysDir, MEDIA_PATH), 'utf8').includes(MARKER);
+  } catch {
+    return true;
+  }
+}
+
+module.exports = { applyMediaStreamErrorPatch, isApplied, PIPE_FIND, PIPE_REPLACE, MARKER };

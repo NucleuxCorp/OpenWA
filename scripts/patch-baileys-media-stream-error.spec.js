@@ -7,7 +7,7 @@ const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-const { applyMediaStreamErrorPatch, PIPE_FIND, MARKER } = require('./patch-baileys-media-stream-error');
+const { applyMediaStreamErrorPatch, isApplied, PIPE_FIND, MARKER } = require('./patch-baileys-media-stream-error');
 
 /**
  * Same contract as the sibling patcher specs: fire only on the exact shape, refuse anything else,
@@ -110,5 +110,19 @@ test('the marker the idempotence check keys on is actually written', () => {
   const { dir, file } = fakeBaileys();
   applyMediaStreamErrorPatch(dir);
   assert.ok(fs.readFileSync(file, 'utf8').includes(MARKER));
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('isApplied tracks the transform for the startup guard', () => {
+  const { dir } = fakeBaileys();
+  assert.equal(isApplied(dir), false);
+  applyMediaStreamErrorPatch(dir);
+  assert.equal(isApplied(dir), true);
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('isApplied reads an uninspectable tree as applied rather than broken', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'baileys-media-'));
+  assert.equal(isApplied(dir), true);
   fs.rmSync(dir, { recursive: true, force: true });
 });
