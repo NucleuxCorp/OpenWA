@@ -18,6 +18,7 @@ const stub = () => jest.fn(never);
 function groups(sock: Record<string, jest.Mock>, budgetMs: number): BaileysGroups {
   const host = {
     ensureReady: () => undefined,
+    sessionProxyUrl: () => undefined,
     getSocket: () => sock as unknown as WASocket,
     logger: { warn: jest.fn(), debug: jest.fn(), info: jest.fn(), error: jest.fn() },
     toNeutralJid: (j: string) => j,
@@ -30,6 +31,7 @@ function groups(sock: Record<string, jest.Mock>, budgetMs: number): BaileysGroup
 function contacts(sock: Record<string, jest.Mock>, budgetMs: number): BaileysContacts {
   const host = {
     ensureReady: () => undefined,
+    sessionProxyUrl: () => undefined,
     getSocket: () => sock as unknown as WASocket,
     logger: { warn: jest.fn(), debug: jest.fn(), info: jest.fn(), error: jest.fn() },
     normalizedSelfJid: () => '628177@s.whatsapp.net',
@@ -43,7 +45,14 @@ function contacts(sock: Record<string, jest.Mock>, budgetMs: number): BaileysCon
   return new BaileysContacts(host, budgetMs);
 }
 
-const PNG = { mimetype: 'image/png', data: Buffer.from('x') };
+// A real 1x1 PNG: a picture write reads the header of its bytes before it reaches the socket.
+const PNG = {
+  mimetype: 'image/png',
+  data: Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+    'base64',
+  ),
+};
 
 describe('group writes report an unconfirmed write rather than success', () => {
   it.each([

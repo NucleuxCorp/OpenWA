@@ -1,6 +1,7 @@
 import { Module, DynamicModule, Type } from '@nestjs/common';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ThrottlerStorage } from '@nestjs/throttler';
 import { PluginInstance } from './entities/plugin-instance.entity';
 import { IngressEvent } from './entities/ingress-event.entity';
 import { IntegrationDeliveryFailure } from './entities/integration-delivery-failure.entity';
@@ -8,6 +9,7 @@ import { PluginInstanceService } from './plugin-instance.service';
 import { IngressEventService } from './ingress-event.service';
 import { IngressService, IngressRouteDescriptor } from './ingress.service';
 import { IngressController } from './ingress.controller';
+import { admitIngressInstance } from './ingress-instance-limit';
 import { IngressEnqueueService, buildIngressDeadLetterRow } from './ingress-enqueue.service';
 import { IngressReconcilerService } from './ingress-reconciler.service';
 import { RedriveService } from './redrive.service';
@@ -16,7 +18,7 @@ import { IntegrationRetentionService } from './integration-retention.service';
 import { IntegrationInstanceController } from './integration-instance.controller';
 import { ScopeBindingService } from './scope-binding.service';
 import { PluginLoaderService } from '../../core/plugins/plugin-loader.service';
-import { PLUGIN_INSTANCE_PORT, type PluginInstancePort } from '../../core/plugins/plugin-host-ports';
+import { PLUGIN_INSTANCE_PORT } from '../../core/plugins/plugin-host-ports';
 import { EngineRegistry } from '../../engine/engine-registry.service';
 import { Session } from '../session/entities/session.entity';
 import { createLogger } from '../../common/services/logger.service';
@@ -58,11 +60,8 @@ if (process.env.QUEUE_ENABLED === 'true') {
     IntegrationRetentionService,
     // Binds the core-owned plugin capability port to this module's service; resolved lazily by the
     // plugin runtime (PluginHostServices) so its provider cycle stays broken.
-    {
-      provide: PLUGIN_INSTANCE_PORT,
-      useFactory: (instances: PluginInstanceService): PluginInstancePort => instances,
-      inject: [PluginInstanceService],
-    },
+    // An alias, not a factory, so lifecycle hooks are not dispatched twice on the same instance.
+    { provide: PLUGIN_INSTANCE_PORT, useExisting: PluginInstanceService },
     {
       provide: IngressService,
       inject: [
@@ -72,6 +71,7 @@ if (process.env.QUEUE_ENABLED === 'true') {
         IngressEnqueueService,
         getRepositoryToken(IntegrationDeliveryFailure, 'data'),
         EngineRegistry,
+        ThrottlerStorage,
       ],
       useFactory: (
         instances: PluginInstanceService,
@@ -80,6 +80,7 @@ if (process.env.QUEUE_ENABLED === 'true') {
         ingressEnqueue: IngressEnqueueService,
         failures: Repository<IntegrationDeliveryFailure>,
         registry: EngineRegistry,
+        throttlerStorage: ThrottlerStorage,
       ) => {
         const dlqLogger = createLogger('IngressEnqueue');
         const ingressLogger = createLogger('Ingress');
@@ -95,6 +96,8 @@ if (process.env.QUEUE_ENABLED === 'true') {
           // Audit sink for preflight rejections (they leave no dedup/DLQ row). The Prometheus counter is
           // a separate follow-up (see plan notes); the structured log is the MVP audit surface.
           log: (event, meta) => ingressLogger.warn(event, meta),
+          // The app's global throttler storage (Redis when enabled), so the bucket is shared across nodes.
+          admitInstance: (pluginId, instanceId) => admitIngressInstance(throttlerStorage, pluginId, instanceId),
           // Live ingress delivery: record the dispatch outcome on the event row (so the reconciler
           // can tell a stranded 'pending' row from one that reached the dispatch tier) and, on a
           // swallowed inline-dispatch failure, persist a dead-letter row so RedriveService can replay
