@@ -28,8 +28,10 @@
  *   8. `node scripts/patch-baileys-appstate.js --best-effort` when present, the app-state resync
  *      bound, gated the same way.
  *   9. `node scripts/patch-baileys-newsletter-create.js --best-effort` when present, the
- *      newsletter-create parse fix. Steps 7-8 are the Baileys patches, so a Baileys-only install
- *      runs those and skips 2-6.
+ *      newsletter-create parse fix.
+ *  10. `node scripts/patch-baileys-media-stream-error.js --best-effort` when present, so a media
+ *      download dropped mid-stream rejects instead of crashing the process. Steps 8-10 are the
+ *      Baileys patches, so a Baileys-only install runs those and skips 2-7.
  *
  * Structured like scripts/patch-wwebjs-201832.js: pure planning + injectable spawn, so the spec
  * (scripts/postinstall.spec.js, node:test) exercises every branch without a real npm run.
@@ -142,6 +144,15 @@ function planSteps(root, env = process.env) {
       name: 'Baileys newsletter-create parse fix (scripts/patch-baileys-newsletter-create.js --best-effort)',
       command: process.execPath,
       args: [baileysNewsletterPatcher, '--best-effort'],
+      options: { stdio: 'inherit', cwd: root, env: cleanEnv },
+    });
+  }
+  const baileysMediaStreamPatcher = path.join(root, 'scripts', 'patch-baileys-media-stream-error.js');
+  if (fs.existsSync(baileysMediaStreamPatcher)) {
+    steps.push({
+      name: 'Baileys media download error forwarding (scripts/patch-baileys-media-stream-error.js --best-effort)',
+      command: process.execPath,
+      args: [baileysMediaStreamPatcher, '--best-effort'],
       options: { stdio: 'inherit', cwd: root, env: cleanEnv },
     });
   }

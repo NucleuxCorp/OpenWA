@@ -27,6 +27,7 @@ function makeRoot({
   participantArityPatcher = false,
   baileysPatcher = false,
   baileysNewsletterPatcher = false,
+  baileysMediaStreamPatcher = false,
 } = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'openwa-postinstall-'));
   if (dashboard) fs.mkdirSync(path.join(root, 'dashboard'));
@@ -37,7 +38,8 @@ function makeRoot({
     readySyncPatcher ||
     participantArityPatcher ||
     baileysPatcher ||
-    baileysNewsletterPatcher
+    baileysNewsletterPatcher ||
+    baileysMediaStreamPatcher
   ) {
     fs.mkdirSync(path.join(root, 'scripts'));
   }
@@ -61,6 +63,9 @@ function makeRoot({
   }
   if (baileysNewsletterPatcher) {
     fs.writeFileSync(path.join(root, 'scripts', 'patch-baileys-newsletter-create.js'), '// stub\n');
+  }
+  if (baileysMediaStreamPatcher) {
+    fs.writeFileSync(path.join(root, 'scripts', 'patch-baileys-media-stream-error.js'), '// stub\n');
   }
   return root;
 }
@@ -148,11 +153,12 @@ test('planSteps: dashboard and all patchers run in stable order', () => {
       participantArityPatcher: true,
       baileysPatcher: true,
       baileysNewsletterPatcher: true,
+      baileysMediaStreamPatcher: true,
     }),
   );
   // One assertion per patcher on disk: the test is named for ALL of them, so a patcher that is
   // planned but never named here would leave the claim false while the suite stayed green.
-  assert.equal(steps.length, 8);
+  assert.equal(steps.length, 9);
   assert.equal(steps[0].command, 'npm ci');
   assert.match(steps[1].args[0], /patch-wwebjs-201832\.js$/);
   assert.match(steps[2].args[0], /patch-wwebjs-newsletter-preview\.js$/);
@@ -161,6 +167,7 @@ test('planSteps: dashboard and all patchers run in stable order', () => {
   assert.match(steps[5].args[0], /patch-wwebjs-participant-arity\.js$/);
   assert.match(steps[6].args[0], /patch-baileys-appstate\.js$/);
   assert.match(steps[7].args[0], /patch-baileys-newsletter-create\.js$/);
+  assert.match(steps[8].args[0], /patch-baileys-media-stream-error\.js$/);
 });
 
 test('run: nothing to do exits 0 and never spawns', () => {
